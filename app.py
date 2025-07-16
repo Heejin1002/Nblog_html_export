@@ -37,11 +37,14 @@ if st.button("추출", type="primary"):
                 options.add_argument(
                     "user-agent=Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
                 )
-                # 여기서부터 추가!
+                # 리눅스(클라우드) 환경에서 chromium 경로 지정
                 if os.path.exists("/usr/bin/chromium-browser"):
                     options.binary_location = "/usr/bin/chromium-browser"
                 elif os.path.exists("/usr/bin/chromium"):
                     options.binary_location = "/usr/bin/chromium"
+
+                chromedriver_autoinstaller.install()
+
                 # 2. 모바일 주소 변환 함수
                 def to_mobile_url(url):
                     import re
@@ -57,12 +60,6 @@ if st.button("추출", type="primary"):
 
                 # 모바일 주소로 변환
                 mobile_url = to_mobile_url(url.strip())
-
-                # 리눅스용 chromium 경로 지정
-                if os.path.exists("/usr/bin/chromium-browser"):
-                    options.binary_location = "/usr/bin/chromium-browser"
-                elif os.path.exists("/usr/bin/chromium"):
-                    options.binary_location = "/usr/bin/chromium"
 
                 html, title = extract_blog_html(mobile_url, options)
                 st.session_state['html'] = html
