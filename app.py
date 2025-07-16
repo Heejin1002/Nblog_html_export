@@ -2,6 +2,9 @@ import streamlit as st
 from blog_html2 import extract_blog_html
 import pyperclip
 from selenium.webdriver.chrome.options import Options
+import chromedriver_autoinstaller
+import os
+import shutil
 
 st.set_page_config(page_title="네이버 블로그 본문 추출기", layout="wide")
 st.title("네이버 블로그 본문 추출기 (Streamlit)")
@@ -30,8 +33,47 @@ if st.button("추출", type="primary"):
                 options.add_argument("--headless")
                 options.add_argument("--disable-gpu")
                 options.add_argument("--no-sandbox")
-                options.binary_location = "/usr/bin/chromium-browser"
-                html, title = extract_blog_html(url.strip(), options)
+                chromedriver_autoinstaller.install()
+                # 윈도우용 크롬 경로 추가
+                win_chrome_paths = [
+                    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+                    r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
+                ]
+                for path in win_chrome_paths:
+                    if os.path.exists(path):
+                        options.binary_location = path
+                        break
+                # 기존 리눅스용 경로도 유지
+                chromium_paths = [
+                    "/usr/bin/chromium-browser",
+                    "/usr/bin/chromium",
+                    "/usr/bin/google-chrome",
+                ]
+                for path in chromium_paths:
+                    if shutil.which(path):
+                        options.binary_location = path
+                        break
+                # 1. User-Agent 추가
+                options.add_argument(
+                    "user-agent=Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+                )
+                # 2. 모바일 주소 변환 함수
+                def to_mobile_url(url):
+                    import re
+                    m = re.match(r'https?://blog.naver.com/([^/]+)/([0-9]+)', url)
+                    if m:
+                        blog_id, log_no = m.group(1), m.group(2)
+                        return f"https://m.blog.naver.com/{blog_id}/{log_no}"
+                    m = re.match(r'https?://blog.naver.com/PostView.naver\?blogId=([^&]+)&logNo=([0-9]+)', url)
+                    if m:
+                        blog_id, log_no = m.group(1), m.group(2)
+                        return f"https://m.blog.naver.com/{blog_id}/{log_no}"
+                    return url # 변환할 수 없으면 원본 URL 반환
+
+                # 모바일 주소로 변환
+                mobile_url = to_mobile_url(url.strip())
+
+                html, title = extract_blog_html(mobile_url, options)
                 st.session_state['html'] = html
                 st.session_state['title'] = title
                 st.success("추출 완료!")
