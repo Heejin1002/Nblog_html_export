@@ -34,14 +34,14 @@ if st.button("추출", type="primary"):
                 options.add_argument("--disable-gpu")
                 options.add_argument("--no-sandbox")
                 options.add_argument("--disable-dev-shm-usage")
-                options.add_argument("--disable-setuid-sandbox")
-                options.add_argument("--disable-extensions")
-                options.add_argument("--disable-infobars")
-                options.add_argument("--window-size=1920,1080")
-                # 1. User-Agent 추가
                 options.add_argument(
                     "user-agent=Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
                 )
+                # 여기서부터 추가!
+                if os.path.exists("/usr/bin/chromium-browser"):
+                    options.binary_location = "/usr/bin/chromium-browser"
+                elif os.path.exists("/usr/bin/chromium"):
+                    options.binary_location = "/usr/bin/chromium"
                 # 2. 모바일 주소 변환 함수
                 def to_mobile_url(url):
                     import re
