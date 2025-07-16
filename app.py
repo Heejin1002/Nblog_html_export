@@ -33,26 +33,11 @@ if st.button("추출", type="primary"):
                 options.add_argument("--headless")
                 options.add_argument("--disable-gpu")
                 options.add_argument("--no-sandbox")
-                chromedriver_autoinstaller.install()
-                # 윈도우용 크롬 경로 추가
-                win_chrome_paths = [
-                    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-                    r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
-                ]
-                for path in win_chrome_paths:
-                    if os.path.exists(path):
-                        options.binary_location = path
-                        break
-                # 기존 리눅스용 경로도 유지
-                chromium_paths = [
-                    "/usr/bin/chromium-browser",
-                    "/usr/bin/chromium",
-                    "/usr/bin/google-chrome",
-                ]
-                for path in chromium_paths:
-                    if shutil.which(path):
-                        options.binary_location = path
-                        break
+                options.add_argument("--disable-dev-shm-usage")
+                options.add_argument("--disable-setuid-sandbox")
+                options.add_argument("--disable-extensions")
+                options.add_argument("--disable-infobars")
+                options.add_argument("--window-size=1920,1080")
                 # 1. User-Agent 추가
                 options.add_argument(
                     "user-agent=Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
@@ -72,6 +57,12 @@ if st.button("추출", type="primary"):
 
                 # 모바일 주소로 변환
                 mobile_url = to_mobile_url(url.strip())
+
+                # 리눅스용 chromium 경로 지정
+                if os.path.exists("/usr/bin/chromium-browser"):
+                    options.binary_location = "/usr/bin/chromium-browser"
+                elif os.path.exists("/usr/bin/chromium"):
+                    options.binary_location = "/usr/bin/chromium"
 
                 html, title = extract_blog_html(mobile_url, options)
                 st.session_state['html'] = html
